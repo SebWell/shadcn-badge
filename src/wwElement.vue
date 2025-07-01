@@ -3,7 +3,7 @@
     <component
       v-if="content.icon && content.iconPosition === 'left'"
       :is="content.icon"
-      class="w-3 h-3 mr-1"
+      class="badge-icon badge-icon-left"
     />
     
     <span v-if="content.text">
@@ -15,16 +15,16 @@
     <component
       v-if="content.icon && content.iconPosition === 'right'"
       :is="content.icon"
-      class="w-3 h-3 ml-1"
+      class="badge-icon badge-icon-right"
     />
     
     <button
       v-if="content.dismissible"
       @click="handleDismiss"
-      class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+      class="badge-dismiss"
       type="button"
     >
-      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M18 6L6 18M6 6l12 12"/>
       </svg>
     </button>
@@ -33,23 +33,6 @@
 
 <script>
 import { computed } from 'vue'
-import { cn } from './cn.js'
-
-// Badge variants configuration
-const badgeVariants = {
-  base: "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-  variants: {
-    variant: {
-      default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-      secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-      destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-      outline: "text-foreground",
-    },
-  },
-  defaultVariants: {
-    variant: "default",
-  },
-}
 
 export default {
   name: 'WewebBadge',
@@ -60,6 +43,7 @@ export default {
       default: () => ({
         text: 'Badge',
         variant: 'default',
+        size: 'default',
         icon: null,
         iconPosition: 'left',
         dismissible: false,
@@ -69,15 +53,25 @@ export default {
   },
   emits: ['dismiss'],
   setup(props, { emit }) {
-    // Computed classes based on variants
+    // Computed classes based on variants (CSS Vanilla)
     const badgeClasses = computed(() => {
-      const variant = props.content.variant || badgeVariants.defaultVariants.variant
+      const variant = props.content.variant || 'default'
+      const size = props.content.size || 'default'
       
-      return cn(
-        badgeVariants.base,
-        badgeVariants.variants.variant[variant],
-        props.content.customClasses
-      )
+      const classes = [
+        'badge-base',
+        `badge-variant-${variant}`
+      ]
+      
+      if (size !== 'default') {
+        classes.push(`badge-size-${size}`)
+      }
+      
+      if (props.content.customClasses) {
+        classes.push(props.content.customClasses)
+      }
+      
+      return classes.join(' ')
     })
 
     // Dismiss handler
@@ -98,7 +92,106 @@ export default {
 }
 </script>
 
-<style>
-/* Import global shadcn/ui styles */
-@import './globals.css';
+<style scoped>
+/* Variables CSS Shadcn/UI */
+:root {
+  --primary: hsl(222.2, 47.4%, 11.2%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(210, 40%, 96%);
+  --secondary-foreground: hsl(222.2, 84%, 4.9%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --border: hsl(214.3, 31.8%, 91.4%);
+}
+
+/* Badge base styles */
+.badge-base {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Variant styles */
+.badge-variant-default {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  padding: 4px 10px;
+}
+
+.badge-variant-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  padding: 4px 10px;
+}
+
+.badge-variant-destructive {
+  background-color: var(--destructive);
+  color: var(--destructive-foreground);
+  padding: 4px 10px;
+}
+
+.badge-variant-outline {
+  background-color: transparent;
+  color: var(--primary);
+  border: 1px solid var(--border);
+  padding: 3px 9px;
+}
+
+/* Size variants */
+.badge-size-sm {
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+.badge-size-lg {
+  font-size: 13px;
+  padding: 6px 12px;
+}
+
+/* Icon styles */
+.badge-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.badge-icon-left {
+  margin-right: 4px;
+}
+
+.badge-icon-right {
+  margin-left: 4px;
+}
+
+/* Dismiss button */
+.badge-dismiss {
+  margin-left: 4px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  color: currentColor;
+  cursor: pointer;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.badge-dismiss:hover {
+  opacity: 0.8;
+}
+
+.badge-dismiss:focus {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
 </style> 
