@@ -8,7 +8,23 @@ export default {
         { name: 'dismiss', label: 'On Dismiss', event: { value: '' } },
     ],
     properties: {
-text: {
+        content: {
+            label: 'Badge Settings',
+            type: 'Object',
+            section: 'settings',
+            bindable: true,
+            defaultValue: {
+                text: 'Badge',
+                variant: 'default',
+                size: 'default',
+                icon: null,
+                iconPosition: 'left',
+                dismissible: false,
+                customClasses: ''
+            },
+            options: {
+                item: {
+                    text: {
                         label: 'Text',
                         type: 'Text',
                         section: 'settings',
@@ -54,7 +70,9 @@ text: {
                         section: 'style',
                         bindable: true,
                         defaultValue: ''
-    }
+                    }
+                }
+            }
         }
     }
 };

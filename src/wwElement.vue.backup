@@ -1,25 +1,25 @@
 <template>
   <div :class="badgeClasses">
     <component
-      v-if="icon && iconPosition === 'left'"
-      :is="icon"
+      v-if="content.icon && content.iconPosition === 'left'"
+      :is="content.icon"
       class="badge-icon badge-icon-left"
     />
     
-    <span v-if="text">
-      {{ text }}
+    <span v-if="content.text">
+      {{ content.text }}
     </span>
     
     <slot v-else />
     
     <component
-      v-if="icon && iconPosition === 'right'"
-      :is="icon"
+      v-if="content.icon && content.iconPosition === 'right'"
+      :is="content.icon"
       class="badge-icon badge-icon-right"
     />
     
     <button
-      v-if="dismissible"
+      v-if="content.dismissible"
       @click="handleDismiss"
       class="badge-dismiss"
       type="button"
@@ -37,15 +37,26 @@ import { computed } from 'vue'
 export default {
   name: 'WewebBadge',
   props: {
-        // Individual props will be auto-generated based on the component type
-        // This is a placeholder that will be manually refined per component
-    },
+    content: {
+      type: Object,
+      required: true,
+      default: () => ({
+        text: 'Badge',
+        variant: 'default',
+        size: 'default',
+        icon: null,
+        iconPosition: 'left',
+        dismissible: false,
+        customClasses: ''
+      })
+    }
+  },
   emits: ['dismiss'],
   setup(props, { emit }) {
     // Computed classes based on variants (CSS Vanilla)
     const badgeClasses = computed(() => {
-      const variant = props.variant || 'default'
-      const size = props.size || 'default'
+      const variant = props.content.variant || 'default'
+      const size = props.content.size || 'default'
       
       const classes = [
         'badge-base',
@@ -56,8 +67,8 @@ export default {
         classes.push(`badge-size-${size}`)
       }
       
-      if (props.customClasses) {
-        classes.push(props.customClasses)
+      if (props.content.customClasses) {
+        classes.push(props.content.customClasses)
       }
       
       return classes.join(' ')
@@ -68,8 +79,8 @@ export default {
       emit('dismiss', event)
       
       // Execute Weweb workflow if defined
-      if (props.dismissWorkflowId && typeof wwLib !== 'undefined') {
-        wwLib.executeWorkflow(props.dismissWorkflowId)
+      if (props.content.dismissWorkflowId && typeof wwLib !== 'undefined') {
+        wwLib.executeWorkflow(props.content.dismissWorkflowId)
       }
     }
 
