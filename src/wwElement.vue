@@ -1,44 +1,44 @@
 <template>
-  <div :class="badgeClasses" @click="handleClick">
-    <!-- Icon Left -->
-    <i 
-      v-if="content.showIcon && content.iconPosition === 'left' && content.iconName" 
-      :data-lucide="content.iconName" 
-      class="badge-icon badge-icon-left"
-    ></i>
-    
-    <!-- Text Content -->
-    <span v-if="content.text">
-      {{ content.text }}
-    </span>
-    
-    <slot v-else />
-    
-    <!-- Icon Right -->
-    <i 
-      v-if="content.showIcon && content.iconPosition === 'right' && content.iconName" 
-      :data-lucide="content.iconName" 
-      class="badge-icon badge-icon-right"
-    ></i>
-    
-    <!-- Dismiss Button -->
-    <button
-      v-if="content.dismissible"
-      @click="handleDismiss"
-      class="badge-dismiss"
-      type="button"
-      aria-label="Close badge"
-    >
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M18 6L6 18M6 6l12 12"/>
-      </svg>
-    </button>
+  <div class="ww-badge">
+    <div :class="badgeClasses" @click="handleClick">
+      <!-- Icon Left -->
+      <i 
+        v-if="content.showIcon && content.iconPosition === 'left' && content.iconName" 
+        :data-lucide="content.iconName" 
+        class="ww-badge__icon ww-badge__icon--left"
+      ></i>
+      
+      <!-- Text Content -->
+      <span v-if="content.text">
+        {{ content.text }}
+      </span>
+      
+      <slot v-else />
+      
+      <!-- Icon Right -->
+      <i 
+        v-if="content.showIcon && content.iconPosition === 'right' && content.iconName" 
+        :data-lucide="content.iconName" 
+        class="ww-badge__icon ww-badge__icon--right"
+      ></i>
+      
+      <!-- Dismiss Button -->
+      <button
+        v-if="content.dismissible"
+        @click="handleDismiss"
+        class="ww-badge__dismiss"
+        type="button"
+        aria-label="Close badge"
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </template>
 
 <script>
-import { computed, onMounted } from 'vue'
-
 export default {
   name: 'ShadcnBadge',
   props: {
@@ -55,93 +55,114 @@ export default {
         iconPosition: "left"
       })
     },
-    wwEditorState: { type: Object, required: true }
+    wwElementState: { type: Object, required: true },
+    /* wwEditor:start */
+    wwEditorState: { type: Object, required: true },
+    /* wwEditor:end */
   },
-  emits: ['trigger-event', 'dismiss'],
-  setup(props, { emit }) {
-    // Load Lucide icons on mount
-    onMounted(() => {
-      if (typeof lucide !== 'undefined') {
-        lucide.createIcons()
-      } else {
-        // Load Lucide if not available
-        const script = document.createElement('script')
-        script.src = 'https://unpkg.com/lucide@latest/dist/umd/lucide.js'
-        script.onload = () => {
-          if (typeof lucide !== 'undefined') {
-            lucide.createIcons()
-          }
-        }
-        document.head.appendChild(script)
-      }
-    })
-
-    const badgeClasses = computed(() => {
-      const variant = props.content.variant || 'default'
-      const size = props.content.size || 'default'
+  emits: ['trigger-event'],
+  computed: {
+    badgeClasses() {
+      const variant = this.content.variant || 'default'
+      const size = this.content.size || 'default'
       
       const classes = [
-        'badge-base',
-        `badge-variant-${variant}`
+        'ww-badge__base',
+        `ww-badge__base--${variant}`
       ]
       
       if (size !== 'default') {
-        classes.push(`badge-size-${size}`)
+        classes.push(`ww-badge__base--size-${size}`)
       }
       
       return classes.join(' ')
-    })
-
-    const handleClick = (event) => {
-      emit('trigger-event', {
+    }
+  },
+  mounted() {
+    // Load Lucide icons on mount
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons()
+    } else {
+      // Load Lucide if not available
+      const script = document.createElement('script')
+      script.src = 'https://unpkg.com/lucide@latest/dist/umd/lucide.js'
+      script.onload = () => {
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons()
+        }
+      }
+      document.head.appendChild(script)
+    }
+  },
+  methods: {
+    handleClick(event) {
+      this.$emit('trigger-event', {
         domEvent: event,
         value: {
-          text: props.content.text,
-          variant: props.content.variant,
-          content: props.content
+          text: this.content.text,
+          variant: this.content.variant,
+          content: this.content
         }
       })
-    }
-
-    const handleDismiss = (event) => {
+    },
+    handleDismiss(event) {
       event.stopPropagation() // Prevent triggering click event
       
       const eventData = {
-        text: props.content.text,
-        content: props.content
+        text: this.content.text,
+        content: this.content
       }
       
-      emit('dismiss', { domEvent: event, value: eventData })
-      emit('trigger-event', { 
+      this.$emit('trigger-event', { 
         domEvent: event, 
         value: { event: 'dismiss', ...eventData } 
       })
-    }
-
-    return {
-      badgeClasses,
-      handleClick,
-      handleDismiss
     }
   }
 }
 </script>
 
-<style scoped>
-/* Variables CSS Shadcn/UI */
+<style>
+/* ===== SHADCN UI CSS VARIABLES ===== */
 :root {
-  --primary: hsl(222.2, 47.4%, 11.2%);
-  --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(210, 40%, 96%);
-  --secondary-foreground: hsl(222.2, 84%, 4.9%);
-  --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(210, 40%, 98%);
-  --border: hsl(214.3, 31.8%, 91.4%);
-  --foreground: hsl(222.2, 84%, 4.9%);
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222.2 84% 4.9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --primary: 210 40% 98%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 212.7 26.8% 83.9%;
 }
 
 /* Badge base styles */
-.badge-base {
+.ww-badge__base {
   display: inline-flex;
   align-items: center;
   border-radius: 9999px;
@@ -155,91 +176,91 @@ export default {
   padding: 4px 10px;
 }
 
-.badge-base:hover {
+.ww-badge__base:hover {
   opacity: 0.8;
 }
 
 /* Variant styles */
-.badge-variant-default {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
+.ww-badge__base--default {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
 }
 
-.badge-variant-secondary {
-  background-color: var(--secondary);
-  color: var(--secondary-foreground);
+.ww-badge__base--secondary {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
 }
 
-.badge-variant-destructive {
-  background-color: var(--destructive);
-  color: var(--destructive-foreground);
+.ww-badge__base--destructive {
+  background-color: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground));
 }
 
-.badge-variant-outline {
+.ww-badge__base--outline {
   background-color: transparent;
-  color: var(--foreground);
-  border: 1px solid var(--border);
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
   padding: 3px 9px;
 }
 
-.badge-variant-success {
+.ww-badge__base--success {
   background-color: hsl(140, 84%, 39%);
   color: hsl(210, 40%, 98%);
 }
 
-.badge-variant-warning {
+.ww-badge__base--warning {
   background-color: hsl(38, 92%, 50%);
   color: hsl(25, 95%, 15%);
 }
 
 /* Size variants */
-.badge-size-sm {
+.ww-badge__base--size-sm {
   font-size: 11px;
   padding: 2px 6px;
 }
 
-.badge-size-lg {
+.ww-badge__base--size-lg {
   font-size: 13px;
   padding: 6px 12px;
 }
 
 /* Adjust outline padding for different sizes */
-.badge-size-sm.badge-variant-outline {
+.ww-badge__base--size-sm.ww-badge__base--outline {
   padding: 1px 5px;
 }
 
-.badge-size-lg.badge-variant-outline {
+.ww-badge__base--size-lg.ww-badge__base--outline {
   padding: 5px 11px;
 }
 
 /* Icon styles */
-.badge-icon {
+.ww-badge__icon {
   width: 12px;
   height: 12px;
   flex-shrink: 0;
 }
 
-.badge-icon-left {
+.ww-badge__icon--left {
   margin-right: 4px;
 }
 
-.badge-icon-right {
+.ww-badge__icon--right {
   margin-left: 4px;
 }
 
 /* Size-specific icon adjustments */
-.badge-size-sm .badge-icon {
+.ww-badge__base--size-sm .ww-badge__icon {
   width: 10px;
   height: 10px;
 }
 
-.badge-size-lg .badge-icon {
+.ww-badge__base--size-lg .ww-badge__icon {
   width: 14px;
   height: 14px;
 }
 
 /* Dismiss button */
-.badge-dismiss {
+.ww-badge__dismiss {
   margin-left: 4px;
   border-radius: 50%;
   background: none;
@@ -255,23 +276,23 @@ export default {
   transition: opacity 0.2s ease-in-out;
 }
 
-.badge-dismiss:hover {
+.ww-badge__dismiss:hover {
   opacity: 0.7;
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-.badge-dismiss:focus {
+.ww-badge__dismiss:focus {
   outline: 2px solid currentColor;
   outline-offset: 1px;
 }
 
 /* Size-specific dismiss button adjustments */
-.badge-size-sm .badge-dismiss {
+.ww-badge__base--size-sm .ww-badge__dismiss {
   width: 12px;
   height: 12px;
 }
 
-.badge-size-lg .badge-dismiss {
+.ww-badge__base--size-lg .ww-badge__dismiss {
   width: 16px;
   height: 16px;
 }
